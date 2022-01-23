@@ -1,4 +1,5 @@
-from fastapi import Body, FastAPI
+from typing import Optional
+from fastapi import Body, FastAPI, Query
 from app.db import database, Person
 
 app = FastAPI(title="FastAPI, Docker, and Traefik")
@@ -21,3 +22,10 @@ async def shutdown_event():
 @app.post("/person/new")
 async def create_person(person: Person = Body(...)):
     return person
+
+@app.get("/person/detail")
+async def show_person(
+    name: Optional[str] = Query(None, min_length=3, max_length=10), 
+    age: str = Query(...)
+    ):
+    return {"name": name, "age": age}
