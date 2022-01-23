@@ -1,18 +1,10 @@
-# Dockerfile
+# Dockerfile.prod
 
-# pull the official docker image
-FROM python:3.9.4-slim
+FROM tiangolo/uvicorn-gunicorn:python3.8-slim
 
-# set work directory
-WORKDIR /app
+RUN apt-get update && apt-get install -y netcat
 
-# set env variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-
-# install dependencies
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# copy project
 COPY . .
