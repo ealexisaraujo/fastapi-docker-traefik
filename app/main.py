@@ -1,6 +1,9 @@
+from turtle import title
 from typing import Optional
-from fastapi import Body, FastAPI, Query
-from app.db import database, Person
+
+from fastapi import Body, FastAPI, Path, Query
+
+from app.db import Person, database
 
 app = FastAPI(title="FastAPI, Docker, and Traefik")
 
@@ -9,23 +12,49 @@ app = FastAPI(title="FastAPI, Docker, and Traefik")
 async def read_root():
     return {"hello": "world"}
 
+
 @app.on_event("startup")
 async def startup_event():
-  if not database.is_connected:
-    await database.connect()
+    if not database.is_connected:
+        await database.connect()
+
 
 @app.on_event("shutdown")
 async def shutdown_event():
-  if database.is_connected:
-    await database.disconnect()
+    if database.is_connected:
+        await database.disconnect()
+
 
 @app.post("/person/new")
 async def create_person(person: Person = Body(...)):
     return person
 
+
 @app.get("/person/detail")
 async def show_person(
-    name: Optional[str] = Query(None, min_length=3, max_length=10), 
-    age: str = Query(...)
-    ):
+    name: Optional[str] = Query(
+        None,
+        min_length=3,
+        max_length=10,
+        title="Person's name",
+        description="The name of the person you are looking for",
+    ),
+    age: str = Query(
+        ...,
+        title="Person's age",
+        description="The age of the person you are looking for",
+    ),
+):
     return {"name": name, "age": age}
+
+
+@app.get("/person/detail/{person_id}")
+async def show_person_detail(
+    person_id: int = Path(
+        ...,
+        gt=0,
+        title="Person ID",
+        description="The ID of the person to show",
+    )
+):
+    return {"id": person_id}
