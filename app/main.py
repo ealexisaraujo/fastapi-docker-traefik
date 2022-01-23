@@ -1,9 +1,8 @@
-from turtle import title
 from typing import Optional
 
 from fastapi import Body, FastAPI, Path, Query
 
-from app.db import Person, database
+from app.db import Location, Person, database
 
 app = FastAPI(title="FastAPI, Docker, and Traefik")
 
@@ -58,3 +57,24 @@ async def show_person_detail(
     )
 ):
     return {"id": person_id}
+
+
+# Validations: Request Body
+@app.put("/person/{person_id}")
+async def update_person(
+    person_id: int = Path(
+        ...,
+        gt=0,
+        title="Person ID",
+        description="The ID of the person to update",
+    ),
+    person: Person = Body(
+        ...,
+        title="Person",
+        description="The person to update",
+    ),
+    location: Location = Body(...),
+):
+    results = person.dict()
+    results.update(location.dict())
+    return results
