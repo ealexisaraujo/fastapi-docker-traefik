@@ -1,3 +1,6 @@
+import enum
+from enum import Enum
+from random import choices
 from typing import Optional
 
 import databases
@@ -15,6 +18,15 @@ class BaseMeta(ormar.ModelMeta):
     database = database
 
 
+class HairColor(Enum):
+    BLACK = "black"
+    BLONDE = "blonde"
+    BROWN = "brown"
+    RED = "red"
+    GREY = "grey"
+    WHITE = "white"
+
+
 class User(ormar.Model):
     class Meta(BaseMeta):
         tablename = "users"
@@ -29,10 +41,10 @@ class Person(ormar.Model):
         tablename = "person"
 
     id: int = ormar.Integer(primary_key=True)
-    first_name: str = ormar.String(max_length=128, nullable=False)
-    last_name: str = ormar.String(max_length=128, nullable=False)
-    age: int = ormar.Integer(nullable=False)
-    hair_color: Optional[str] = ormar.String(max_length=128, nullable=True)
+    first_name: str = ormar.String(nullable=False, max_length=35)
+    last_name: str = ormar.String(nullable=False, min_length=3, max_length=35)
+    age: int = ormar.Integer(nullable=False, gt=18, lt=115)
+    hair_color: Optional[str] = ormar.String(max_length=128, choices=list(HairColor))
     is_married: Optional[bool] = ormar.Boolean(nullable=True, default=False)
 
 
