@@ -1,11 +1,10 @@
-import enum
 from enum import Enum
-from random import choices
 from typing import Optional
 
 import databases
 import ormar
 import sqlalchemy
+from pydantic import EmailStr
 
 from .config import settings
 
@@ -32,7 +31,7 @@ class User(ormar.Model):
         tablename = "users"
 
     id: int = ormar.Integer(primary_key=True)
-    email: str = ormar.String(max_length=128, unique=True, nullable=False)
+    email: EmailStr
     active: bool = ormar.Boolean(default=True, nullable=False)
 
 
@@ -46,6 +45,7 @@ class Person(ormar.Model):
     age: int = ormar.Integer(nullable=False, gt=18, lt=115)
     hair_color: Optional[str] = ormar.String(max_length=128, choices=list(HairColor))
     is_married: Optional[bool] = ormar.Boolean(nullable=True, default=False)
+    email: EmailStr
 
 
 class Location(ormar.Model):
