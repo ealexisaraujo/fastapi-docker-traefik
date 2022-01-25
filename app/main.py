@@ -37,11 +37,15 @@ async def show_person(
         max_length=10,
         title="Person's name",
         description="The name of the person you are looking for",
+        example={
+            "name": "John",
+        },
     ),
     age: str = Query(
         ...,
         title="Person's age",
         description="The age of the person you are looking for",
+        example={"age": "25"},
     ),
 ):
     return {"name": name, "age": age}
@@ -54,6 +58,7 @@ async def show_person_detail(
         gt=0,
         title="Person ID",
         description="The ID of the person to show",
+        example={"person_id": 1},
     )
 ):
     return {"id": person_id}
@@ -67,6 +72,7 @@ async def update_person(
         gt=0,
         title="Person ID",
         description="The ID of the person to update",
+        example={"person_id": 1},
     ),
     person: Person = Body(
         ...,

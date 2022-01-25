@@ -47,6 +47,18 @@ class Person(ormar.Model):
     is_married: Optional[bool] = ormar.Boolean(nullable=True, default=False)
     email: EmailStr
 
+    class Config:
+        schema_extra = {
+            "example": {
+                "first_name": "John",
+                "last_name": "Doe",
+                "age": 25,
+                "hair_color": "black",
+                "is_married": False,
+                "email": "",
+            }
+        }
+
 
 class Location(ormar.Model):
     class Meta(BaseMeta):
