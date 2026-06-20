@@ -1,7 +1,7 @@
 # Dockerfile
 
 # pull the official docker image
-FROM python:3.9.4-slim
+FROM python:3.12-slim
 
 # set work directory
 WORKDIR /app
@@ -12,7 +12,8 @@ ENV PYTHONUNBUFFERED 1
 
 # install dependencies
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN python -m pip install --no-cache-dir --upgrade pip \
+    && python -m pip install --no-cache-dir -r requirements.txt
 
 # copy project
 COPY . .

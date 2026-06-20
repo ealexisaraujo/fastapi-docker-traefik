@@ -1,20 +1,30 @@
 from enum import Enum
 from typing import Optional
 
-import databases
 import ormar
 import sqlalchemy
-from pydantic import EmailStr
+from pydantic import ConfigDict, EmailStr
 
 from .config import settings
 
-database = databases.Database(settings.db_url)
+
+def get_async_database_url(url: str) -> str:
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    if url.startswith("postgresql+psycopg2://"):
+        return url.replace("postgresql+psycopg2://", "postgresql+asyncpg://", 1)
+    return url
+
+
+def get_sync_database_url(url: str) -> str:
+    if url.startswith("postgresql+asyncpg://"):
+        return url.replace("postgresql+asyncpg://", "postgresql+psycopg2://", 1)
+    return url
+
+
+database = ormar.DatabaseConnection(get_async_database_url(settings.db_url))
 metadata = sqlalchemy.MetaData()
-
-
-class BaseMeta(ormar.ModelMeta):
-    metadata = metadata
-    database = database
+base_ormar_config = ormar.OrmarConfig(database=database, metadata=metadata)
 
 
 class HairColor(Enum):
@@ -27,8 +37,7 @@ class HairColor(Enum):
 
 
 class User(ormar.Model):
-    class Meta(BaseMeta):
-        tablename = "users"
+    ormar_config = base_ormar_config.copy(tablename="users")
 
     id: int = ormar.Integer(primary_key=True)
     email: EmailStr
@@ -36,8 +45,7 @@ class User(ormar.Model):
 
 
 class Person(ormar.Model):
-    class Meta(BaseMeta):
-        tablename = "person"
+    ormar_config = base_ormar_config.copy(tablename="person")
 
     id: int = ormar.Integer(primary_key=True)
     first_name: str = ormar.String(nullable=False, max_length=35)
@@ -47,22 +55,22 @@ class Person(ormar.Model):
     is_married: Optional[bool] = ormar.Boolean(nullable=True, default=False)
     email: EmailStr
 
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "first_name": "John",
                 "last_name": "Doe",
                 "age": 25,
                 "hair_color": "black",
                 "is_married": False,
-                "email": "",
-            }
+                "email": "john@example.com",
+            },
         }
+    )
 
 
 class Location(ormar.Model):
-    class Meta(BaseMeta):
-        tablename = "location"
+    ormar_config = base_ormar_config.copy(tablename="location")
 
     id: int = ormar.Integer(primary_key=True)
     city: str = ormar.String(max_length=128, nullable=False)
@@ -70,5 +78,5 @@ class Location(ormar.Model):
     country: str = ormar.String(max_length=128, nullable=False)
 
 
-engine = sqlalchemy.create_engine(settings.db_url)
+engine = sqlalchemy.create_engine(get_sync_database_url(settings.db_url))
 metadata.create_all(engine)
